@@ -36,6 +36,18 @@ class DBClient {
   async getUserById (userId) {
     return this.client.db().collect('users').findOne({ userId });
   }
+  
+  async getFileById (fileId) {
+    return this.client.db().collect('files').findOne({ fileId });
+  }
+
+  async addNewFile (data) {
+    return this.client.db().collect('files').insertOne(data);
+  }
+
+  async getUserByToken (token) {
+    return this.client.db().collect('users').findOne({ token });
+  }
 }
 
 const dbClient = new DBClient();
