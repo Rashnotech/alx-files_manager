@@ -32,6 +32,10 @@ class DBClient {
   async insertUser (data) {
     return this.client.db().collection('users').insertOne(data);
   }
+
+  async getUserById (userId) {
+    return this.client.db().collect('users').findOne({ userId });
+  }
 }
 
 const dbClient = new DBClient();
