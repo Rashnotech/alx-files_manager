@@ -1,6 +1,5 @@
-import dbClient from '../utils/db'
+import dbClient from '../utils/db';
 import sha1 from 'sha1';
-
 
 class UsersController {
   static async postNew (req, res) {
@@ -14,20 +13,18 @@ class UsersController {
       }
       const user = await dbClient.getUserByEmail(email);
       if (user) {
-        return res.status(400).json({'error': 'Already exist'})
+        return res.status(400).json({ error: 'Already exist' });
       }
       const hashedPassword = sha1(password);
       const newUser = await dbClient.insertUser({ email, password: hashedPassword });
       return res.status(201).json({
         id: newUser.insertedId,
-        email: email
+        email
       });
     } catch (error) {
-      return res.status(400).json({error: error.message});
+      return res.status(400).json({ error: error.message });
     }
   }
-
 }
-
 
 export default UsersController;
