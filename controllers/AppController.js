@@ -1,13 +1,11 @@
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
-
 class AppController {
-
   static getStatus (req, res) {
     const response = {
       redis: redisClient.isAlive(),
-      db: dbClient.isAlive()}
+      db: dbClient.isAlive()
     };
     res.status(200);
     res.json(response);
@@ -18,10 +16,10 @@ class AppController {
       .then(([users, files]) => {
         const response = {
           users,
-          files,
-	};
-	res.status(200);
-	res.json(response);
+          files
+        };
+        res.status(200);
+        res.json(response);
       });
   }
 }
