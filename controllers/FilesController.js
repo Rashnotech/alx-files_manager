@@ -12,7 +12,7 @@ class FilesController {
     const userId = await redisClient.get(token);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const user = await dbClient.getUser({ _id: ObjectId(userId) });
+    const user = await dbClient.getUserById({ _id: ObjectId(userId) });
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     const { name, type, parentId = 0, isPublic = false, data } = req.body;
@@ -31,6 +31,13 @@ class FilesController {
       if (parentFile.type !== 'folder') {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
+    }
+    if (type === 'folder') {
+      const data = {
+        userId: user.id, name, type, parentId
+      };
+      const folderInsert = await dbClient.addNewFile(data);
+      return res.status(201).json(folderInsert);
     }
     let localPath = '';
     if (type !== 'folder') {

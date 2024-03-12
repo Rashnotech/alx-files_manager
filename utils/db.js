@@ -44,10 +44,6 @@ class DBClient {
   async addNewFile (data) {
     return this.client.db().collect('files').insertOne(data);
   }
-
-  async getUserByToken (token) {
-    return this.client.db().collect('users').findOne({ token });
-  }
 }
 
 const dbClient = new DBClient();
