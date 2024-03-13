@@ -24,7 +24,7 @@ class FilesController {
       return res.status(400).json({ error: 'Missing data' });
     }
     if (parentId !== 0) {
-      const parentFile = dbClient.getFileById({ _id: parentId });
+      const parentFile = dbClient.getFileById({ _id: ObjectId(parentId) });
       if (!parentFile) {
         return res.status(400).json({ error: 'Parent not found' });
       }
