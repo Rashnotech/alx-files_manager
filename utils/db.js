@@ -34,15 +34,23 @@ class DBClient {
   }
 
   async getUserById (userId) {
-    return this.client.db().collect('users').findOne({ userId });
+    return this.client.db().collection('users').findOne({ userId });
   }
   
   async getFileById (fileId) {
-    return this.client.db().collect('files').findOne({ fileId });
+    return this.client.db().collection('files').findOne({ fileId });
   }
 
   async addNewFile (data) {
-    return this.client.db().collect('files').insertOne(data);
+    return this.client.db().collection('files').insertOne(data);
+  }
+
+  async getFile (data) {
+    return this.client.db().collection('files').findOne(data);
+  }
+
+  async getFiles (filter, options) {
+    return this.client.db().collection('files').find(filter, options).toArray();
   }
 }
 
