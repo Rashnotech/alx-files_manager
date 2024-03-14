@@ -37,10 +37,17 @@ class FilesController {
     }
     if (type === 'folder') {
       const data = {
-        userId: user.id, name, type, parentId,
+        userId: user._id, name, type, parentId,
       };
       const folderInsert = await dbClient.addNewFile(data);
-      return res.status(201).json(folderInsert);
+      const retFile = {
+        id: folderInsert._id,
+        userId: user._id,
+        type,
+        isPublic,
+        parentId,
+      };
+      return res.status(201).json(retFile);
     }
     let localPath = '';
     if (type !== 'folder') {
