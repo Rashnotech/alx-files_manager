@@ -6,7 +6,7 @@ import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
 class FilesController {
-  static async postUpload (req, res) {
+  static async postUpload(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
     const userId = await redisClient.get(token);
@@ -17,7 +17,7 @@ class FilesController {
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     const {
-      name, type, parentId = 0, isPublic = false, data
+      name, type, parentId = 0, isPublic = false, data,
     } = req.body;
     if (!name) return res.status(400).json({ error: 'Missing name' });
     if (!type || !['folder', 'file', 'image'].includes(type)) {
@@ -37,7 +37,7 @@ class FilesController {
     }
     if (type === 'folder') {
       const data = {
-        userId: user.id, name, type, parentId
+        userId: user.id, name, type, parentId,
       };
       const folderInsert = await dbClient.addNewFile(data);
       return res.status(201).json(folderInsert);
@@ -58,7 +58,7 @@ class FilesController {
       type,
       parentId,
       isPublic,
-      localPath
+      localPath,
     });
 
     const retFile = {
@@ -68,12 +68,12 @@ class FilesController {
       type,
       isPublic,
       parentId,
-      localPath
+      localPath,
     };
     return res.status(201).json(retFile);
   }
 
-  static async getShow (req, res) {
+  static async getShow(req, res) {
     const { id } = req.params;
     const userId = await redisClient.get(`auth_${req.headers['x-token']}`);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -86,7 +86,7 @@ class FilesController {
     return res.json(file);
   }
 
-  static async getIndex (req, res) {
+  static async getIndex(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -100,7 +100,7 @@ class FilesController {
     const filter = { userId: user._id, parentId };
     const options = {
       limit: 20,
-      skip: page * 20
+      skip: page * 20,
     };
 
     const files = await dbClient.getFiles(filter, options);
