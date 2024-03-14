@@ -1,12 +1,12 @@
-import dbClient from '../utils/db';
 import { ObjectId } from 'mongodb';
-import redisClient from '../utils/redis';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import redisClient from '../utils/redis';
+import dbClient from '../utils/db';
 
 class FilesController {
-  static async postUpload (req, res) {
+  static async postUpload(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
     const userId = await redisClient.get(token);
@@ -15,7 +15,9 @@ class FilesController {
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { name, type, parentId = 0, isPublic = false, data } = req.body;
+    const {
+      name, type, parentId = 0, isPublic = false, data,
+    } = req.body;
     if (!name) return res.status(400).json({ error: 'Missing name' });
     if (!type || !['folder', 'file', 'image'].includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
@@ -34,7 +36,7 @@ class FilesController {
     }
     if (type === 'folder') {
       const data = {
-        userId: user.id, name, type, parentId
+        userId: user.id, name, type, parentId,
       };
       const folderInsert = await dbClient.addNewFile(data);
       return res.status(201).json(folderInsert);
@@ -55,31 +57,31 @@ class FilesController {
       type,
       parentId,
       isPublic,
-      localPath
+      localPath,
     });
     return res.status(201).json(newFile);
   }
 
   static async getShow(req, res) {
     const { id } = req.params;
-    const userId = await redisClient.get(`auth_${req.headers['x-token']}`)
-    if (!userId) return res.status(401).json({error: 'Unauthorized'});
+    const userId = await redisClient.get(`auth_${req.headers['x-token']}`);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
-    if (!user) return res.status(401).json({error: 'Unauthorized'});
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    const file = await dbClient.getFile({ userId: user._id, _id: ObjectId(id)});
-    if (!file) return res.status(404).json({error: 'Not found'});
+    const file = await dbClient.getFile({ userId: user._id, _id: ObjectId(id) });
+    if (!file) return res.status(404).json({ error: 'Not found' });
     return res.json(file);
   }
 
   static async getIndex(req, res) {
-    const token = `auth_${req.headers['x-token']}`
+    const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
-    if (!userId) return res.status(401).json({error: 'Unauthorized'});
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
-    if (!user) res.status(401).json({error: 'Unauthorized'});
+    if (!user) res.status(401).json({ error: 'Unauthorized' });
 
     let { parentId, page } = req.query;
     page = parseInt(page, 10) || 0;
@@ -87,7 +89,7 @@ class FilesController {
     const filter = { userId: user._id, parentId };
     const options = {
       limit: 20,
-      skip: page * 20
+      skip: page * 20,
     };
 
     const files = await dbClient.getFiles(filter, options);
