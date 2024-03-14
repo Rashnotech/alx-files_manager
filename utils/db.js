@@ -34,7 +34,7 @@ class DBClient {
   }
 
   async getUserById(userId) {
-    return this.client.db().collection('users').findOne({ userId });
+    return this.client.db().collection('users').findOne(userId);
   }
 
   async getFileById(fileId) {

@@ -31,7 +31,6 @@ class UsersController {
   static async getMe(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
-
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -39,7 +38,6 @@ class UsersController {
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
     return res.json({ id: user._id, email: user.email });
   }
 }

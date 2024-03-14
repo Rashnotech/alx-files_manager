@@ -6,7 +6,7 @@ import dbClient from '../utils/db';
 class AuthController {
   static async getConnect(req, res) {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
+    if (!authHeader) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -23,7 +23,7 @@ class AuthController {
     const key = `auth_${token}`;
     await redisClient.set(key, user._id.toString(), 86400);
 
-    return res.status(200).json({ token });
+    return res.status(200).json({ 'token': token });
   }
 
   static async getDisconnect(req, res) {
@@ -38,8 +38,8 @@ class AuthController {
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    await redisClient.del(`auth_${token}`);
-    return res.status(204).end();
+    redisClient.del(`auth_${token}`);
+    return res.status(204).send();
   }
 }
 
