@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { contentType } from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
+import Queue from 'bull';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
@@ -19,7 +20,6 @@ class FilesController {
     const {
       name, type, parentId = 0, isPublic = false, data,
     } = req.body;
-    console.log(data);
     if (!name) return res.status(400).json({ error: 'Missing name' });
     if (!type || !['folder', 'file', 'image'].includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
@@ -36,11 +36,13 @@ class FilesController {
         return res.status(400).json({ error: 'Parent is not a folder' });
       }
     }
+    const fileQueue = new Queue('fileQueue');
     if (type === 'folder') {
       const data = {
         userId: user._id, name, type, parentId,
       };
       const folderInsert = await dbClient.addNewFile(data);
+      fileQueue.add({ userId: user._id, fileId: folderInsert._id });
       const retFile = {
         id: folderInsert._id,
         userId: user._id,
@@ -69,6 +71,7 @@ class FilesController {
       localPath,
     });
 
+    fileQueue.add({ userId: user._id, fileId: newFile._id });
     const retFile = {
       id: newFile._id,
       userId: user._id,
@@ -155,6 +158,7 @@ class FilesController {
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
     const fileId = req.params.id || null;
+    const size = req.params.size || null;
 
     const file = await dbClient.getFile({ _id: ObjectId(fileId) });
     if (!file) return res.status(404).json({ error: 'Not found' });
@@ -169,7 +173,7 @@ class FilesController {
     if (!fs.existsSync(file.localPath)) {
       return res.status(404).json({ error: 'Not found' });
     }
-    const path = fs.realpathSync(file.localPath);
+    const path = [500, 250, 100].includes(size) ? fs.realpathSync(`${file.localPath}_${size}`) : fs.realpathSync(file.localPath);
     res.setHeader('Content-Type', contentType(file.name || 'text/plain; charset=utf-8'));
     return res.sendFile(path);
   }
