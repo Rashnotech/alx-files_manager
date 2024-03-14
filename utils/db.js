@@ -38,7 +38,7 @@ class DBClient {
   }
 
   async getFileById(fileId) {
-    return this.client.db().collection('files').findOne({ fileId });
+    return this.client.db().collection('files').findOne(fileId);
   }
 
   async addNewFile(data) {

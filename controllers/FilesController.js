@@ -13,6 +13,7 @@ class FilesController {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
+    console.log(user);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     const {
@@ -44,7 +45,7 @@ class FilesController {
     let localPath = '';
     if (type !== 'folder') {
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-      if (!fs.existSync(folderPath)) {
+      if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
       }
       const fileName = `${uuidv4()}`;
@@ -59,7 +60,17 @@ class FilesController {
       isPublic,
       localPath,
     });
-    return res.status(201).json(newFile);
+
+    const retFile = {
+      id: newFile._id,
+      userId: user._id,
+      name,
+      type,
+      isPublic,
+      parentId,
+      localPath
+    }
+    return res.status(201).json(retFile);
   }
 
   static async getShow(req, res) {
