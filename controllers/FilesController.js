@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
 import path from 'path';
+import { contentType } from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
@@ -120,7 +121,7 @@ class FilesController {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
-    if (!user) return res.status.json({ error: 'Unauthorized' });
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
     const fileId = req.params.id || null;
     const filter = { _id: ObjectId(fileId), userId: user._id };
     const file = await dbClient.getFile(filter);
@@ -130,13 +131,13 @@ class FilesController {
     return res.json(update);
   }
 
-  static async putUnpublish(req, res) {
+  static async putUnpublish (req, res) {
     const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
-    if (!user) return res.status.json({ error: 'Unauthorized' });
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
     const fileId = req.params.id || null;
     const filter = { _id: ObjectId(fileId), userId: user._id };
     const file = await dbClient.getFile(filter);
@@ -144,6 +145,33 @@ class FilesController {
     await dbClient.updateFile(filter, { $set: { isPublic: false } });
     const update = await dbClient.getFile(filter);
     return res.json(update);
+  }
+
+  static async getFile (req, res) {
+    const token = `auth_${req.headers['x-token']}`;
+    const userId = await redisClient.get(token);
+    if (!userId) return res.status(401).json({error: 'Unauthorized' });
+
+    const user = await dbClient.getUserById({ _id: ObjectId(userId) });
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    const fileId = req.params.id || null; 
+
+    const file = await dbClient.getFile({ _id: ObjectId(fileId) });
+    if (!file) return res.status(404).json({ error: 'Not found' });
+    if (file.isPublic && file.userId.toString() !== userId) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    if (file.type === 'folder') {
+      return res.status(400).json({ error: "A folder doesn't have content" });
+    }
+
+    if (!fs.existsSync(file.localPath)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const path = fs.realpathSync(file.localPath);
+    res.setHeader('Content-Type', contentType(file.name || 'text/plain; charset=utf-8'));
+    return res.sendFile(path);
   }
 }
 
