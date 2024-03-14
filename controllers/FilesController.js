@@ -131,7 +131,7 @@ class FilesController {
     return res.json(update);
   }
 
-  static async putUnpublish (req, res) {
+  static async putUnpublish(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -147,14 +147,14 @@ class FilesController {
     return res.json(update);
   }
 
-  static async getFile (req, res) {
+  static async getFile(req, res) {
     const token = `auth_${req.headers['x-token']}`;
     const userId = await redisClient.get(token);
-    if (!userId) return res.status(401).json({error: 'Unauthorized' });
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const user = await dbClient.getUserById({ _id: ObjectId(userId) });
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
-    const fileId = req.params.id || null; 
+    const fileId = req.params.id || null;
 
     const file = await dbClient.getFile({ _id: ObjectId(fileId) });
     if (!file) return res.status(404).json({ error: 'Not found' });
